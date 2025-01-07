@@ -1,5 +1,10 @@
+-------------------
+
+# initialise session
+
 dx run app-cloud_workstation --ssh -y -imax_session_length=4h
 
+# file id's for reference 
 
 ukb_c1-22_GRCh38_full_analysis_set_plus_decoy_hla_merged.bed	----	file-GvZz568Jp2pxF6X7f80ypZjj
 ukb_c1-22_GRCh38_full_analysis_set_plus_decoy_hla_merged.bim	----	file-GvZyFG8Jp2pvKJx7ZXvzGvjZ
@@ -108,67 +113,6 @@ done
 # PART G 
 
 
-#!/bin/sh
-
-# Requirements: 
-# 0-4 - please refer to readme.md
-# 5. Must have executed: 
-# - partB-merge-files-dx-fuse.sh 
-# - partC-step1-qc-filter.sh
-# - partD-step1-regenie.sh
-# - partE-step2-qc-filter.sh
-# - partF-step2-regenie.sh
-
-# How to Run:
-# Run shell script: 
-#   sh partG-merge-regenie-files.sh 
-# Edit shell script: 
-# nano partG-merge-regenie-files.sh 
-
-# Inputs:
-# Note that you can adjust the output directory by setting the data_file_dir variable
-# - /Data/assoc.c1_diabetes_cc.regenie.gz - regenie results for chromosome 1 
-# - /Data/assoc.c2_diabetes_cc.regenie.gz - regenie results for chromosome 2 
-# - /Data/assoc.c3_diabetes_cc.regenie.gz - regenie results for chromosome 3 
-# - /Data/assoc.c4_diabetes_cc.regenie.gz - regenie results for chromosome 4 
-# - etc.
-
-# Outputs (for each chromosome):
-# - /Data/assoc.regenie.merged.txt - merged results for all chromosomes in tab-delimited format
-
-merge_cmd='out_file="HTN500k_assoc.regenie.merged.txt"
-
-# Use dxFUSE to copy the regenie files into the container storage
-cp /mnt/project/CRCh38/*.regenie.gz .
-gunzip *.regenie.gz
-
-# add the header back to the top of the merged file
-echo -e "CHROM\tGENPOS\tID\tALLELE0\tALLELE1\tA1FREQ\tN\tTEST\tBETA\tSE\tCHISQ\tLOG10P\tEXTRA" > $out_file
-
-files="./*.regenie"
-for f in $files
-do
-# for each .regenie file
-# remove header with tail
-# transform to tab delimited with tr
-# save it into $out_file
-   tail -n+2 $f | tr " " "\t" >> $out_file
-done
-
-# remove regenie files
-rm *.regenie'
-
-data_file_dir="/CRCh38"
-
-dx run swiss-army-knife -iin="/${data_file_dir}/HTN500k_assoc.c1_HTN_cc.regenie.gz" \    
-   -icmd="${merge_cmd}" --tag="Step1" --instance-type "mem1_ssd1_v2_x16"\
-   --destination="${data_file_dir}" --brief --yes 
-
-
-
-----
-
-# PART G [working]
 dx run swiss-army-knife \
   -iin="/${data_file_dir}/HTN500k_assoc.c1_HTN_cc.regenie.gz" \
   -icmd='
